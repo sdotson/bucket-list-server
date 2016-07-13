@@ -5,6 +5,7 @@ const express = require('express'),
   app = express();
 
 /*
+http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 
 Just an API to hit for bucket list app
 
@@ -59,7 +60,6 @@ ListItem = {
 }
 
 */
-
 
 app.listen(3000);
 console.log('Listening on port 3000...');
