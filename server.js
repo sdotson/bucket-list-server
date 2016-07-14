@@ -49,29 +49,6 @@ app.use(morgan('dev'));
 // Connect to database
 mongoose.connect(config.database);
 
-// var router = express.Router();
-//
-// // User items endpoints
-// router.route('/users/:user_id/items')
-//   .get(function(req, res) {
-//     res.json({message: "Just got a items GET request for " + req.params.user_id});
-//   })
-//   .post(function(req, res) {
-//     res.json({message: "Just got a items POST request for " + req.params.user_id});
-//   });
-//
-// router.route('/users/:user_id/items/:item_id')
-//   .get(function(req,res) {
-//     res.json({message: "Just got a items GET request for item " + req.params.item_id + ", user " + req.params.user_id});
-//   })
-//   .put(function(req,res) {
-//     res.json({message: "Just got a items PUT request for item " + req.params.item_id + ", user " + req.params.user_id});
-//   })
-//   .delete(function(req,res) {
-//     res.json({message: "Just got a items DELETE request for item " + req.params.item_id + ", user " + req.params.user_id});
-//   });
-
-
 require('./routes')(app);
 
 app.listen(port);

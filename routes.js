@@ -69,6 +69,31 @@ module.exports = function(app) {
       }
     });
   });
+  // routes require Authorization : token in the header
+  // Regular routes
+  apiRoutes.route('/users')
+    .get(requireAuth, function(req, res) {
+      res.json({message: "Just got a items GET request for "});
+    });
+  // User items endpoints
+  apiRoutes.route('/users/:user_id/items')
+    .get(requireAuth, function(req, res) {
+      res.json({message: "Just got a items GET request for " + req.params.user_id});
+    })
+    .post(requireAuth, function(req, res) {
+      res.json({message: "Just got a items POST request for " + req.params.user_id});
+    });
+
+  apiRoutes.route('/users/:user_id/items/:item_id')
+    .get(requireAuth, function(req, res) {
+      res.json({message: "Just got a items GET request for item " + req.params.item_id + ", user " + req.params.user_id});
+    })
+    .put(requireAuth, function(req, res) {
+      res.json({message: "Just got a items PUT request for item " + req.params.item_id + ", user " + req.params.user_id});
+    })
+    .delete(requireAuth, function(req, res) {
+      res.json({message: "Just got a items DELETE request for item " + req.params.item_id + ", user " + req.params.user_id});
+    });
 
   // Set url for API group routes
   app.use('/api', apiRoutes);
