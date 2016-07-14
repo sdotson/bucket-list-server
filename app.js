@@ -1,5 +1,15 @@
 /*
 FROM https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens
+
+https://github.com/themikenicholson/passport-jwt
+
+https://www.sitepoint.com/using-json-web-tokens-node-js/
+
+https://medium.com/@rajaraodv/securing-react-redux-apps-with-jwt-tokens-fcfe81356ea0#.ozhrnygpj
+
+consider passing user_id in token, returning user id to app for storage as well,
+and verifying the user_id for the protected routes.
+
 */
 
 // =======================
