@@ -3,12 +3,13 @@ const passport = require('passport');
 const express = require('express');
 const config = require('./config/main');
 const jwt = require('jsonwebtoken');
-
+var util = require('util');
 // Set up middleware
 const requireAuth = passport.authenticate('jwt', { session: false });
 
 // Load models
 const User = require('./models/User');
+const ListItem = require('./models/ListItem');
 
 // Export the routes for our app to use
 module.exports = function(app) {
@@ -50,7 +51,7 @@ module.exports = function(app) {
       email: req.body.email
     }, function(err, user) {
       if (err) throw err;
-      console.log(user);
+
       if (!user) {
         res.status(401).json({ success: false, message: 'Authentication failed. User not found.' });
       } else {
@@ -76,23 +77,75 @@ module.exports = function(app) {
       res.json({message: "Just got a items GET request for "});
     });
   // User items endpoints
-  apiRoutes.route('/users/:user_id/items')
+  apiRoutes.route('/items')
     .get(requireAuth, function(req, res) {
-      res.json({message: "Just got a items GET request for " + req.params.user_id});
+      console.log(util.inspect(req));
+      ListItem.find({'user_id': req.user._id}, function(err, items) {
+        if (err) {
+          res.status(400).send(err);
+        } else {
+          res.status(200).json(items);
+        }
+      });
+      // res.json({message: "Just got a items GET request for " + req.params.user_id});
     })
     .post(requireAuth, function(req, res) {
-      res.json({message: "Just got a items POST request for " + req.params.user_id});
+      const listItem = new ListItem();
+      listItem.user_id = req.user._id;
+      listItem.title = req.body.title;
+      listItem.description = req.body.description;
+      listItem.categories = req.body.categories;
+
+      // Save the chat message if there are no errors
+      listItem.save(function(err) {
+          if (err) {
+            res.status(400).send(err);
+          } else {
+            res.status(201).json(listItem);
+          }
+      });
     });
 
-  apiRoutes.route('/users/:user_id/items/:item_id')
+  apiRoutes.route('/items/:item_id')
     .get(requireAuth, function(req, res) {
-      res.json({message: "Just got a items GET request for item " + req.params.item_id + ", user " + req.params.user_id});
+      ListItem.find({$and : [{'user_id': req.user._id}, {'_id': req.params.item_id}]}, function(err, items) {
+        if (err) {
+          res.status(400).send(err);
+        } else {
+          res.status(200).json(items);
+        }
+      });
     })
     .put(requireAuth, function(req, res) {
-      res.json({message: "Just got a items PUT request for item " + req.params.item_id + ", user " + req.params.user_id});
+      console.log(req.body);
+      ListItem.findOne({$and : [{'_id': req.params.item_id}, {'user_id': req.user._id}]}, function(err, item) {
+        if (err) {
+          res.status(400).send(err);
+        }
+        console.log('made it', item);
+        console.log(req.body);
+        item.title = req.body.title || item.title;
+        item.description = req.body.description || item.description;
+        item.categories = req.body.categories || item.categories;
+
+        // Save the updates to the message
+        item.save(function(err) {
+          if (err) {
+            res.status(400).send(err);
+          } else {
+            res.status(200).json(item);
+          }
+        });
+      });
     })
     .delete(requireAuth, function(req, res) {
-      res.json({message: "Just got a items DELETE request for item " + req.params.item_id + ", user " + req.params.user_id});
+      ListItem.findOneAndRemove({$and : [{'_id': req.params.item_id}, {'user_id': req.user._id}]}, function(err, item) {
+        if (err) {
+          res.status(400).send(err);
+        } else {
+          res.status(200).json({ message: 'Message removed!' , item: item });
+        }
+      });
     });
 
   // Set url for API group routes

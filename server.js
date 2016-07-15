@@ -10,34 +10,6 @@ const config = require('./config/main');
 const cors = require('cors');
 const port = 3000;
 
-/*
-http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
-https://scotch.io/tutorials/build-a-restful-api-using-node-and-express-4
-
-Data structures
-
-Category = {
-  name,
-  created,
-  updated
-}
-
-User = {
-  username,
-  email,
-  created,
-  updated
-}
-
-**** Below is a guess. I should figure out login system first ****
-ListItem = {
-  user,
-  title,
-  description,
-  categories
-}
-
-*/
 // Use body-parser to get POST requests for API use
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
