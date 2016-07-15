@@ -13,6 +13,9 @@ const port = 3000;
 // Use body-parser to get POST requests for API use
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// CORS has a white list functionality. Use that once I figure out where this API lives
+// https://www.npmjs.com/package/cors
 app.use(cors());
 
 // Log requests to console
