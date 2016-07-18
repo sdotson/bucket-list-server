@@ -15,6 +15,11 @@ const ListItemSchema = new mongoose.Schema({
   },
   categories: {
     type: Array
+  },
+  completed: {
+    type: Boolean,
+    required: true,
+    default: false
   }
 },
 {
