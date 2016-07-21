@@ -30,7 +30,7 @@ module.exports = function(app) {
     if(!req.body.email || !req.body.password) {
       res.status(400).json({ success: false, message: 'Please enter email and password.' });
     } else {
-      const newUser = new User({
+      let newUser = new User({
         email: req.body.email,
         password: req.body.password
       });
@@ -60,7 +60,7 @@ module.exports = function(app) {
         user.comparePassword(req.body.password, function(err, isMatch) {
           if (isMatch && !err) {
             // Create token if the password matched and no error was thrown
-            const token = jwt.sign(user, config.secret, {
+            let token = jwt.sign(user, config.secret, {
               expiresIn: 10080 // in seconds
             });
             res.status(200).json({ success: true, token: 'JWT ' + token, userId: user._id });
@@ -80,7 +80,7 @@ module.exports = function(app) {
   // User items endpoints
   apiRoutes.route('/items')
     .get(requireAuth, function(req, res) {
-      console.log(util.inspect(req));
+      console.log('getItems', util.inspect(req.user));
       ListItem.find({'user_id': req.user._id}, function(err, items) {
         if (err) {
           res.status(400).send(err);
@@ -91,7 +91,8 @@ module.exports = function(app) {
       // res.json({message: "Just got a items GET request for " + req.params.user_id});
     })
     .post(requireAuth, function(req, res) {
-      const listItem = new ListItem();
+      let listItem = new ListItem();
+      console.log('post request', req.user);
       listItem.user_id = req.user._id;
       listItem.title = req.body.title;
       listItem.description = req.body.description;
