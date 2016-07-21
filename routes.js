@@ -30,7 +30,7 @@ module.exports = function(app) {
     if(!req.body.email || !req.body.password) {
       res.status(400).json({ success: false, message: 'Please enter email and password.' });
     } else {
-      let newUser = new User({
+      const newUser = new User({
         email: req.body.email,
         password: req.body.password
       });
@@ -47,7 +47,6 @@ module.exports = function(app) {
 
   // Authenticate the user and get a JSON Web Token to include in the header of future requests.
   apiRoutes.post('/authenticate', function(req, res) {
-    console.log(req.body);
     User.findOne({
       email: req.body.email
     }, function(err, user) {
@@ -64,7 +63,7 @@ module.exports = function(app) {
             const token = jwt.sign(user, config.secret, {
               expiresIn: 10080 // in seconds
             });
-            res.status(200).json({ success: true, token: 'JWT ' + token, user: user._id });
+            res.status(200).json({ success: true, token: 'JWT ' + token, userId: user._id });
           } else {
             res.status(401).json({ success: false, message: 'Authentication failed. Passwords did not match.' });
           }
@@ -81,13 +80,13 @@ module.exports = function(app) {
   // User items endpoints
   apiRoutes.route('/items')
     .get(requireAuth, function(req, res) {
-      console.log(util.inspect(req.user), util.inspect(req.body));
+      console.log(util.inspect(req));
       ListItem.find({'user_id': req.user._id}, function(err, items) {
         if (err) {
           res.status(400).send(err);
-        } else {
-          res.status(200).json(items);
-        }
+        } else
+
+        res.status(200).json(items);
       });
       // res.json({message: "Just got a items GET request for " + req.params.user_id});
     })
@@ -129,7 +128,6 @@ module.exports = function(app) {
         item.title = req.body.title || item.title;
         item.description = req.body.description || item.description;
         item.categories = req.body.categories || item.categories;
-        item.completed = req.body.completed || item.completed;
 
         // Save the updates to the message
         item.save(function(err) {
