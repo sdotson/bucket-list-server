@@ -79,7 +79,7 @@ module.exports = function(app) {
   // User items endpoints
   apiRoutes.route('/items')
     .get(requireAuth, function(req, res) {
-      console.log(util.inspect(req));
+      console.log(util.inspect(req.user), util.inspect(req.body));
       ListItem.find({'user_id': req.user._id}, function(err, items) {
         if (err) {
           res.status(400).send(err);
