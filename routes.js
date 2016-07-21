@@ -30,7 +30,7 @@ module.exports = function(app) {
     if(!req.body.email || !req.body.password) {
       res.status(400).json({ success: false, message: 'Please enter email and password.' });
     } else {
-      const newUser = new User({
+      let newUser = new User({
         email: req.body.email,
         password: req.body.password
       });
@@ -47,9 +47,11 @@ module.exports = function(app) {
 
   // Authenticate the user and get a JSON Web Token to include in the header of future requests.
   apiRoutes.post('/authenticate', function(req, res) {
+    console.log(req.body);
     User.findOne({
       email: req.body.email
     }, function(err, user) {
+      console.log('user found in query', user);
       if (err) throw err;
 
       if (!user) {
@@ -62,7 +64,7 @@ module.exports = function(app) {
             const token = jwt.sign(user, config.secret, {
               expiresIn: 10080 // in seconds
             });
-            res.status(200).json({ success: true, token: 'JWT ' + token, userId: user._id });
+            res.status(200).json({ success: true, token: 'JWT ' + token, user: user._id });
           } else {
             res.status(401).json({ success: false, message: 'Authentication failed. Passwords did not match.' });
           }
