@@ -1,3 +1,4 @@
+'use strict';
 // Import dependencies
 const passport = require('passport');
 const express = require('express');
@@ -80,7 +81,7 @@ module.exports = function(app) {
   // User items endpoints
   apiRoutes.route('/items')
     .get(requireAuth, function(req, res) {
-      console.log('getItems', util.inspect(req.user));
+      console.log('getItems', req.user);
       ListItem.find({'user_id': req.user._id}, function(err, items) {
         if (err) {
           res.status(400).send(err);
