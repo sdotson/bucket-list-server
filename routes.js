@@ -5,6 +5,7 @@ const express = require('express');
 const config = require('./config/main');
 const jwt = require('jsonwebtoken');
 var util = require('util');
+
 // Set up middleware
 const requireAuth = passport.authenticate('jwt', { session: false });
 
@@ -27,7 +28,6 @@ module.exports = function(app) {
 
   // Register new users
   apiRoutes.post('/users/register', function(req, res) {
-    console.log(req.body);
     if(!req.body.email || !req.body.password) {
       res.status(400).json({ success: false, message: 'Please enter email and password.' });
     } else {
@@ -51,7 +51,6 @@ module.exports = function(app) {
     User.findOne({
       email: req.body.email
     }, function(err, user) {
-      console.log('user found in query', user);
       if (err) throw err;
 
       if (!user) {
@@ -61,10 +60,9 @@ module.exports = function(app) {
         user.comparePassword(req.body.password, function(err, isMatch) {
           if (isMatch && !err) {
             // Create token if the password matched and no error was thrown
-            let token = jwt.sign(user.toObject(), config.secret, {
+            let token = jwt.sign({_id: user._id}, config.secret, {
               expiresIn: 10080 // in seconds
             });
-            console.log('verify token payload', jwt.decode(token.slice(3)));
             res.status(200).json({ success: true, token: 'JWT ' + token, userId: user._id });
           } else {
             res.status(401).json({ success: false, message: 'Authentication failed. Passwords did not match.' });
@@ -82,7 +80,6 @@ module.exports = function(app) {
   // User items endpoints
   apiRoutes.route('/items')
     .get(requireAuth, function(req, res) {
-      console.log('getItems', req);
       ListItem.find({'user_id': req.user._id}, function(err, items) {
         if (err) {
           res.status(400).send(err);
@@ -94,7 +91,6 @@ module.exports = function(app) {
     })
     .post(requireAuth, function(req, res) {
       let listItem = new ListItem();
-      console.log('post request', req.user);
       listItem.user_id = req.user._id;
       listItem.title = req.body.title;
       listItem.description = req.body.description;
@@ -121,13 +117,10 @@ module.exports = function(app) {
       });
     })
     .put(requireAuth, function(req, res) {
-      console.log(req.body);
       ListItem.findOne({$and : [{'_id': req.params.item_id}, {'user_id': req.user._id}]}, function(err, item) {
         if (err) {
           res.status(400).send(err);
         }
-        console.log('made it', item);
-        console.log(req.body);
         item.title = req.body.title || item.title;
         item.description = req.body.description || item.description;
         item.categories = req.body.categories || item.categories;
