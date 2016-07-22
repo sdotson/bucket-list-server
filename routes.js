@@ -64,6 +64,7 @@ module.exports = function(app) {
             let token = jwt.sign(user, config.secret, {
               expiresIn: 10080 // in seconds
             });
+            console.log('verify token payload', jwt.decode(token));
             res.status(200).json({ success: true, token: 'JWT ' + token, userId: user._id });
           } else {
             res.status(401).json({ success: false, message: 'Authentication failed. Passwords did not match.' });
@@ -82,6 +83,7 @@ module.exports = function(app) {
   apiRoutes.route('/items')
     .get(requireAuth, function(req, res) {
       console.log('getItems', req.user);
+      console.log('headers', req.headers);
       ListItem.find({'user_id': req.user._id}, function(err, items) {
         if (err) {
           res.status(400).send(err);
