@@ -61,7 +61,7 @@ module.exports = function(app) {
         user.comparePassword(req.body.password, function(err, isMatch) {
           if (isMatch && !err) {
             // Create token if the password matched and no error was thrown
-            let token = jwt.sign(user, config.secret, {
+            let token = jwt.sign(user.toObject(), config.secret, {
               expiresIn: 10080 // in seconds
             });
             console.log('verify token payload', jwt.decode(token.slice(3)));
