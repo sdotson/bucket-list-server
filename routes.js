@@ -82,9 +82,7 @@ module.exports = function(app) {
   // User items endpoints
   apiRoutes.route('/items')
     .get(requireAuth, function(req, res) {
-      console.log('getItems', req.user);
-      console.log('headers', req.headers.authorization);
-      console.log('verify token payload', jwt.decode(req.headers.authorization));
+      console.log('getItems', req);
       ListItem.find({'user_id': req.user._id}, function(err, items) {
         if (err) {
           res.status(400).send(err);
