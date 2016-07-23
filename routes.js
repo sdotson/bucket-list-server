@@ -4,6 +4,8 @@ const passport = require('passport');
 const express = require('express');
 const config = require('./config/main');
 const jwt = require('jsonwebtoken');
+const SparkPost = require('sparkpost');
+const emailClient = new SparkPost('f1a7f69f95399cf4a3c79a46ff41dfc3be0eccf5');
 var util = require('util');
 
 // Set up middleware
@@ -42,6 +44,48 @@ module.exports = function(app) {
           return res.status(400).json({ success: false, message: 'That email address already exists.'});
         }
         res.status(201).json({ success: true, message: 'Successfully created new user.' });
+      });
+    }
+  });
+
+  // Send email for users who have forgotten their password
+  apiRoutes.post('/users/password/reset', function(req, res) {
+    if(!req.body.email) {
+      res.status(400).json({ success: false, message: 'Please enter email.' });
+    } else {
+      User.findOne({
+        email: req.body.email
+      }, function(err, user) {
+        if (err) throw err;
+
+        if (!user) {
+          res.status(400).json({ success: false, message: 'Email does not exist.' });
+        } else {
+          // Generate unique token for password reset, which will be verified in a different route
+
+          // Send email here
+          emailClient.transmissions.send({
+            transmissionBody: {
+              content: {
+                from: 'bucket-list@stuartdotson.com',
+                subject: 'Bucket List password Reset Link',
+                html:'<html><body><p>Included is the link to reset your password. This link is only valid for 24 hours.</p><p>If you did not request this password reset, please disregard.</p></body></html>'
+              },
+              recipients: [
+                {address: 'stu.dotson@gmail.com'}
+              ]
+            }
+          }, function(err, spRes) {
+            if (err) {
+              console.log('Whoops! Something went wrong');
+              console.log(err);
+            } else {
+              console.log('res', res);
+              res.status(200).json({ success: true, message: `You have sent your password reset email for ${req.body.email}`});
+              console.log('Woohoo! You just sent your first mailing!');
+            }
+          });
+        }
       });
     }
   });
