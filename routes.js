@@ -62,6 +62,11 @@ module.exports = function(app) {
           res.status(400).json({ success: false, message: 'Email does not exist.' });
         } else {
           // Generate unique token for password reset, which will be verified in a different route
+          let token = jwt.sign({_id: user._id, email: user.email}, config.secret, {
+            expiresIn: 86400 // one day in seconds
+          });
+          console.log('token', token);
+          let emailMessageLink = `http://localhost:8080/reset-password?token=${token}`;
 
           // Send email here
           emailClient.transmissions.send({
@@ -69,18 +74,17 @@ module.exports = function(app) {
               content: {
                 from: 'bucket-list@stuartdotson.com',
                 subject: 'Bucket List password Reset Link',
-                html:'<html><body><p>Included is the link to reset your password. This link is only valid for 24 hours.</p><p>If you did not request this password reset, please disregard.</p></body></html>'
+                html:`<html><body><p>Included is the link to reset your password. This link is only valid for 24 hours:</p><p><a href="${emailMessageLink}">${emailMessageLink}</a></p><p>If you did not request this password reset, please disregard.</p></body></html>`
               },
               recipients: [
-                {address: 'stu.dotson@gmail.com'}
+                {address: req.body.email}
               ]
             }
           }, function(err, spRes) {
             if (err) {
               console.log('Whoops! Something went wrong');
-              console.log(err);
+              res.status(400).json({ success: false, error: err });
             } else {
-              console.log('res', res);
               res.status(200).json({ success: true, message: `You have sent your password reset email for ${req.body.email}`});
               console.log('Woohoo! You just sent your first mailing!');
             }
