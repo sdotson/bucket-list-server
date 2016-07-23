@@ -62,10 +62,10 @@ module.exports = function(app) {
           res.status(400).json({ success: false, message: 'Email does not exist.' });
         } else {
           // Generate unique token for password reset, which will be verified in a different route
-          let token = jwt.sign({_id: user._id, email: user.email}, config.secret, {
+          let token = jwt.sign({_id: user._id, email: user.email, role: user.role}, config.secret, {
             expiresIn: 86400 // one day in seconds
           });
-          console.log('token', token);
+
           let emailMessageLink = `http://localhost:8080/reset-password?token=${token}`;
 
           // Send email here
@@ -94,6 +94,40 @@ module.exports = function(app) {
     }
   });
 
+  // change password route
+  apiRoutes.route('/users/password')
+    .put(requireAuth, function(req, res) {
+      User.findOne({
+        email: req.user.email
+      }, function(err, user) {
+        if (err) throw err;
+
+        if (!user) {
+          res.status(401).json({ success: false, message: 'Authentication failed. User not found.' });
+        } else {
+          // update password
+          User.findOne({'email': req.user.email}, function(err, user) {
+            if (err) {
+              res.status(400).send(err);
+            }
+
+            user.password = req.body.password;
+
+            // Save the updates to the message
+            user.save(function(err) {
+              if (err) {
+                res.status(400).json({success: false, error: err});
+              } else {
+                res.status(200).json({success: true, email: user.email, message: `Password updated for ${user.email}`});
+              }
+            });
+          });
+          // destroy token for safety (not sure how to do this)
+
+        }
+      });
+    });
+
   // Authenticate the user and get a JSON Web Token to include in the header of future requests.
   apiRoutes.post('/authenticate', function(req, res) {
     User.findOne({
@@ -108,7 +142,7 @@ module.exports = function(app) {
         user.comparePassword(req.body.password, function(err, isMatch) {
           if (isMatch && !err) {
             // Create token if the password matched and no error was thrown
-            let token = jwt.sign({_id: user._id}, config.secret, {
+            let token = jwt.sign({_id: user._id, email: user.email, role: user.role}, config.secret, {
               expiresIn: 10080 // in seconds
             });
             res.status(200).json({ success: true, token: 'JWT ' + token, userId: user._id });
