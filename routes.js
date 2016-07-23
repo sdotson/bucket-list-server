@@ -6,7 +6,6 @@ const config = require('./config/main');
 const jwt = require('jsonwebtoken');
 const SparkPost = require('sparkpost');
 const emailClient = new SparkPost('f1a7f69f95399cf4a3c79a46ff41dfc3be0eccf5');
-var util = require('util');
 
 // Set up middleware
 const requireAuth = passport.authenticate('jwt', { session: false });
@@ -82,11 +81,9 @@ module.exports = function(app) {
             }
           }, function(err, spRes) {
             if (err) {
-              console.log('Whoops! Something went wrong');
               res.status(400).json({ success: false, error: err });
             } else {
               res.status(200).json({ success: true, message: `You have sent your password reset email for ${req.body.email}`});
-              console.log('Woohoo! You just sent your first mailing!');
             }
           });
         }
@@ -108,7 +105,7 @@ module.exports = function(app) {
           // update password
           User.findOne({'email': req.user.email}, function(err, user) {
             if (err) {
-              res.status(400).send(err);
+              res.status(400).json({success: false, error: err});
             }
 
             user.password = req.body.password;
@@ -145,9 +142,9 @@ module.exports = function(app) {
             let token = jwt.sign({_id: user._id, email: user.email, role: user.role}, config.secret, {
               expiresIn: 10080 // in seconds
             });
-            res.status(200).json({ success: true, token: 'JWT ' + token, userId: user._id });
+            res.status(200).json({ success: true, token: 'JWT ' + token, user: { email: user.email, role: user.role } });
           } else {
-            res.status(401).json({ success: false, message: 'Authentication failed. Passwords did not match.' });
+            res.status(401).json({ success: false, error: err, message: 'Authentication failed. Passwords did not match.' });
           }
         });
       }
@@ -164,7 +161,7 @@ module.exports = function(app) {
     .get(requireAuth, function(req, res) {
       ListItem.find({'user_id': req.user._id}, function(err, items) {
         if (err) {
-          res.status(400).send(err);
+          res.status(400).json({ success: false, error: err });
         } else
 
         res.status(200).json(items);
@@ -181,7 +178,7 @@ module.exports = function(app) {
       // Save the chat message if there are no errors
       listItem.save(function(err) {
           if (err) {
-            res.status(400).send(err);
+            res.status(400).json({success: false, error: err});
           } else {
             res.status(201).json(listItem);
           }
@@ -192,7 +189,7 @@ module.exports = function(app) {
     .get(requireAuth, function(req, res) {
       ListItem.find({$and : [{'user_id': req.user._id}, {'_id': req.params.item_id}]}, function(err, items) {
         if (err) {
-          res.status(400).send(err);
+          res.status(400).json({success: false, error: err});
         } else {
           res.status(200).json(items);
         }
@@ -201,7 +198,7 @@ module.exports = function(app) {
     .put(requireAuth, function(req, res) {
       ListItem.findOne({$and : [{'_id': req.params.item_id}, {'user_id': req.user._id}]}, function(err, item) {
         if (err) {
-          res.status(400).send(err);
+          res.status(400).send({success: false, error: err});
         }
         item.title = req.body.title || item.title;
         item.description = req.body.description || item.description;
@@ -210,7 +207,7 @@ module.exports = function(app) {
         // Save the updates to the message
         item.save(function(err) {
           if (err) {
-            res.status(400).send(err);
+            res.status(400).json({success: false, error: err});
           } else {
             res.status(200).json(item);
           }
@@ -220,7 +217,7 @@ module.exports = function(app) {
     .delete(requireAuth, function(req, res) {
       ListItem.findOneAndRemove({$and : [{'_id': req.params.item_id}, {'user_id': req.user._id}]}, function(err, item) {
         if (err) {
-          res.status(400).send(err);
+          res.status(400).json({success: false, error: err});
         } else {
           res.status(200).json({ message: 'Message removed!' , item: item });
         }
