@@ -16,7 +16,17 @@ app.use(bodyParser.json());
 
 // CORS has a white list functionality. Use that once I figure out where this API lives
 // https://www.npmjs.com/package/cors
-app.use(cors());
+const whitelist = ['http://localhost', 'http://stuartdotson.com'];
+function corsOptionsDelegate(req, callback){
+  var corsOptions;
+  if(whitelist.indexOf(req.header('Origin')) !== -1){
+    corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response
+  }else{
+    corsOptions = { origin: false }; // disable CORS for this request
+  }
+  callback(null, corsOptions); // callback expects two parameters: error and options
+};
+app.use(cors(corsOptionsDelegate));
 
 // Log requests to console
 app.use(morgan('dev'));
