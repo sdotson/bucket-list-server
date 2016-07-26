@@ -203,6 +203,7 @@ module.exports = function(app) {
         item.title = req.body.title || item.title;
         item.description = req.body.description || item.description;
         item.categories = req.body.categories || item.categories;
+        item.completed = req.body.completed || item.completed;
 
         // Save the updates to the message
         item.save(function(err) {
