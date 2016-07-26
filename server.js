@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 
 // CORS has a white list functionality. Use that once I figure out where this API lives
 // https://www.npmjs.com/package/cors
-const whitelist = ['http://localhost', /http\:\/\/localhost\:[0-9]{4}/, 'http://stuartdotson.com'];
+const whitelist = ['http://localhost/', 'http://localhost:8080', 'http://stuartdotson.com'];
 function corsOptionsDelegate(req, callback){
   var corsOptions;
   if(whitelist.indexOf(req.header('Origin')) !== -1){
